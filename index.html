@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cookie Designer</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=David+Libre:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400..700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="d-flex" >
+    <div id="form" class=" mt-2 p-5">
+      
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home-tab-pane" type="button" role="tab" aria-controls="home-tab-pane" aria-selected="true">Info</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile-tab-pane" type="button" role="tab" aria-controls="profile-tab-pane" aria-selected="false">Adjust</button>
+            </li>
+          
+          </ul>
+          <div class="tab-content" id="myTabContent">
+            <div class="tab-pane fade show active" id="home-tab-pane" role="tabpanel" aria-labelledby="home-tab" tabindex="0">
+                <label for="hebName1">שם:</label><br>
+                <input type="text" id="hebName1" name="hebName1" placeholder="Hebrew Name" autofocus><br>
+                <label for="hebName2">שם:</label><br>
+                <input type="text" id="hebName2" name="hebName2" placeholder="optional"><br>
+                <label for="english">English name:</label><br>
+                <input type="text" id="english" name="english" placeholder="English Name"><br>
+                <label for="english2">English name:</label><br>
+                <input type="text" id="english2" name="english2" placeholder="optional"><br>
+                <label for="color">Color:</label><br>
+                <input type="color" id="color"  value=""><br>
+                <label for="clrtxt">Or Enter Color:</label><br>
+                <input type="text"  id="clrtxt"><br>
+                <button class="btn btn-primary" id="clrbtn">Change Color</button><br>
+                <a href="Https://colorhunt.co" target="_blank">Colorhunt</a><br>
+                <label for="num">Enter Amount:</label><br>
+                <input type="number" id="num" name="number" placeholder="Enter Amount" ><br>             
+                </div>
+            </div>
+                <div class="tab-pane fade" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabindex="0">
+        
+                    <div class="d-flex align-items-start">
+                        <div class="nav flex-column nav-pills me-3" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                          <button class="nav-link active" id="v-pills-home-tab" data-bs-toggle="pill" data-bs-target="#v-pills-home" type="button" role="tab" aria-controls="v-pills-home" aria-selected="true">Hebrew Name 1</button>
+                          <button class="nav-link" id="v-pills-profile-tab" data-bs-toggle="pill" data-bs-target="#v-pills-profile" type="button" role="tab" aria-controls="v-pills-profile" aria-selected="false">Hebrew Name 2</button>
+                          <button class="nav-link" id="v-pills-messages-tab" data-bs-toggle="pill" data-bs-target="#v-pills-messages" type="button" role="tab" aria-controls="v-pills-messages" aria-selected="false">English Name 1</button>
+                          <button class="nav-link" id="v-pills-settings-tab" data-bs-toggle="pill" data-bs-target="#v-pills-settings" type="button" role="tab" aria-controls="v-pills-settings" aria-selected="false">English Name 2</button>
+                        </div>
+                        <div class="tab-content" id="v-pills-tabContent">
+                          <div class="tab-pane fade show active" id="v-pills-home" role="tabpanel" aria-labelledby="v-pills-home-tab" tabindex="0">
+                            <input type="range" name="adjust" id="hebNme1Size" class="adjuster" value="heb1S"><br><label for="hebNme1Size">Size</label>  
+                            <br><input type="range" name="adjust" id="hebNme1Vertical"  class="adjuster" value="heb1V" min="-100" max="100"><br><label for="hebNme1Vertical">Vertical</label> 
+                            <br><input type="range" name="adjust" id="hebNme1Horizontal" min="-100" max="100"  class="adjuster" value="heb1H"><br><label for="hebNme1Horizontal">Horizontal</label> 
+                         </div>
+                          <div class="tab-pane fade" id="v-pills-profile" role="tabpanel" aria-labelledby="v-pills-profile-tab" tabindex="0">
+                            
+                                <input type="range" name="adjust" id="hebNme2Size" class="adjuster" value="heb2S">Size
+                                <br><input type="range" name="adjust" id="hebNme2Vertical" class="adjuster" min="-100" max="100" value="heb2V">Vertical 
+                                <br><input type="range" name="adjust" id="hebNme2Horizontal" min="-100" max="100" class="adjuster" value="heb2H">Horizontal 
+                            
+                          </div>
+            
+                          <div class="tab-pane fade" id="v-pills-messages" role="tabpanel" aria-labelledby="v-pills-messages-tab" tabindex="0">
+                            <input type="range" name="adjust" id="engNme1Size" class="adjuster">Size
+                            <br><input type="range" name="adjust" id="engNme1Vertical" min="-100" max="100" class="adjuster">Vertical 
+                            <br><input type="range" name="adjust" id="engNme1Horizontal" min="-100" max="100" class="adjuster">Horizontal 
+                          </div>
+                          <div class="tab-pane fade" id="v-pills-settings" role="tabpanel" aria-labelledby="v-pills-settings-tab" tabindex="0">
+                            <input type="range" name="adjust" id="engNme2Size" class="adjuster">Size
+                            <br><input type="range" name="adjust" id="engNme2Vertical" min="-100" max="100" class="adjuster">Vertical 
+                            <br><input type="range" name="adjust" id="engNme2Horizontal" min="-100" max="100" class="adjuster">Horizontal 
+                          </div>
+             
+              </div>  
+                 
+                </div>
+              </div> 
+              <button class="btn btn-primary" id="print">Print</button> </div>
+            
+
+       <div id="img-container" class="m-5">
+       <div class="individual" id="individual">
+      
+        <img src="./tefillin pic.jpg" alt="">
+             <p class="hebName1" id="aaa">ברוך</p>
+        <p class="hebName2">גדליה </p>
+        <p class="english eng">Boruch</p>
+        <p class="english2 eng"></p>
+    </div>
+ 
+  </div>
+</div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+<script src="./index.js"></script>
+</body>
+</html>
