@@ -1,6 +1,12 @@
 // Migration note: these blocks are grouped by feature so you can map each
 // group to a React component + state slice.
 
+const STORAGE_KEY="cookieDesignerStateV1";
+const STORAGE_DEBOUNCE_MS=500;
+const DEFAULT_COLOR="#000000";
+let saveTimeoutId;
+let isRestoringState=false;
+
 // Text content sync (input -> all matching labels).
 const inputHeb1=document.getElementById("hebName1");
 const writeHeb1=document.getElementsByClassName("hebName1");
@@ -38,10 +44,18 @@ const rmv=()=>{
         indClass[i-1].remove();
     }
 };
+const toPositiveIntOrDefault=(value,defaultValue=1)=>{
+    const parsedValue=Number.parseInt(value,10);
+    if(Number.isNaN(parsedValue)||parsedValue<1){
+        return defaultValue;
+    }
+    return parsedValue;
+};
 
 const chngNum=()=>{
+    const cookieCount=toPositiveIntOrDefault(inputNum.value,1);
     rmv();
-    for(let i=0;i<inputNum.value;i++){
+    for(let i=0;i<cookieCount;i++){
         imgContainer.appendChild(individual.cloneNode(true));
     }
 };
@@ -59,7 +73,15 @@ const clrChng=()=>{
 clr.oninput=clrChng;
 const clrtxt=document.getElementById("clrtxt");
 const clrbtn=document.getElementById("clrbtn");
-const normalizeHexColor=(value)=>(value[0]!=="#" ? `#${value}` : value);
+const isValidHexColor=(value)=>/^#[0-9A-Fa-f]{6}$/.test(value);
+const normalizeHexColor=(value="")=>{
+    const trimmedValue=value.trim();
+    if(!trimmedValue){
+        return DEFAULT_COLOR;
+    }
+    const prefixedValue=trimmedValue[0]==="#" ? trimmedValue : `#${trimmedValue}`;
+    return isValidHexColor(prefixedValue) ? prefixedValue : DEFAULT_COLOR;
+};
 const clrchng2=()=>{
     const normalizedColor=normalizeHexColor(clrtxt.value);
     clrtxt.value=normalizedColor;
@@ -184,3 +206,113 @@ const handlePrint=()=>{
     form.appendChild(prin);
 };
 prin.onclick=handlePrint;
+
+const getPersistedInputs=()=>[
+    inputHeb1,inputHeb2,inputEng1,inputEng2,inputNum,
+    clr,clrtxt,hns1,hns2,ens1,ens2,
+    hnv1,hnh1,hnv2,hnh2,env1,enh1,env2,enh2
+];
+const syncPreviewFromInputs=()=>{
+    chngHebName1();
+    chngHebName2();
+    chngEngName1();
+    chngEngName2();
+    clrChng();
+};
+const collectCurrentState=()=>{
+    const state={};
+    getPersistedInputs().forEach((inputElement)=>{
+        state[inputElement.id]=inputElement.value;
+    });
+    return state;
+};
+const saveStateNow=()=>{
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(collectCurrentState()));
+};
+const flushPendingStateSave=()=>{
+    clearTimeout(saveTimeoutId);
+    if(isRestoringState){
+        return;
+    }
+    saveStateNow();
+};
+const scheduleStateSave=()=>{
+    if(isRestoringState){
+        return;
+    }
+    clearTimeout(saveTimeoutId);
+    saveTimeoutId=setTimeout(saveStateNow,STORAGE_DEBOUNCE_MS);
+};
+const bindPersistenceListeners=()=>{
+    getPersistedInputs().forEach((inputElement)=>{
+        inputElement.addEventListener("input",scheduleStateSave);
+        inputElement.addEventListener("change",scheduleStateSave);
+    });
+    clrbtn.addEventListener("click",scheduleStateSave);
+    window.addEventListener("beforeunload",flushPendingStateSave);
+    document.addEventListener("visibilitychange",()=>{
+        if(document.visibilityState==="hidden"){
+            flushPendingStateSave();
+        }
+    });
+};
+const restoreState=()=>{
+    const rawState=localStorage.getItem(STORAGE_KEY);
+    if(!rawState){
+        return;
+    }
+    let parsedState;
+    try{
+        parsedState=JSON.parse(rawState);
+    }catch{
+        return;
+    }
+    isRestoringState=true;
+    try{
+        if(parsedState[inputNum.id]!==undefined){
+            inputNum.value=String(toPositiveIntOrDefault(parsedState[inputNum.id],1));
+            chngNum();
+        }
+        getPersistedInputs().forEach((inputElement)=>{
+            if(inputElement===inputNum){
+                return;
+            }
+            if(parsedState[inputElement.id]===undefined){
+                return;
+            }
+            if(inputElement===clr){
+                const safeColorValue=normalizeHexColor(String(parsedState[inputElement.id]));
+                clr.value=safeColorValue;
+                clrtxt.value=safeColorValue;
+                return;
+            }
+            inputElement.value=parsedState[inputElement.id];
+        });
+        syncPreviewFromInputs();
+        hns1.oninput();
+        hns2.oninput();
+        ens1.oninput();
+        ens2.oninput();
+        hnv1.oninput();
+        hnh1.oninput();
+        hnv2.oninput();
+        hnh2.oninput();
+        env1.oninput();
+        enh1.oninput();
+        env2.oninput();
+        enh2.oninput();
+    }finally{
+        isRestoringState=false;
+    }
+};
+
+bindPersistenceListeners();
+const restoreBtn=document.getElementById("restore");
+if(restoreBtn){
+    restoreBtn.addEventListener("click",restoreState);
+}
+syncPreviewFromInputs();
+window.addEventListener("load",()=>{
+    // Browser autofill can run after script execution; sync once more.
+    setTimeout(syncPreviewFromInputs,0);
+});
