@@ -1,9 +1,9 @@
 {
-  "id": "./index.html",
+  "id": "/newcookie/",
   "name": "Cookie Designer",
   "short_name": "Cookie",
-  "start_url": "./index.html",
-  "scope": "./",
+  "start_url": "/newcookie/",
+  "scope": "/newcookie/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#0d6efd",
