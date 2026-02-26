@@ -44,7 +44,7 @@ body > .d-flex {
 }
 
 #form {
-    width: min(420px, 100%);
+    width: min(315px, 100%);
     margin: 0 !important;
     padding: 1.1rem !important;
     border: 1px solid var(--border);
@@ -91,17 +91,21 @@ body > .d-flex {
 }
 
 #v-pills-tab {
-    gap: 0.25rem;
-    flex: 0 0 138px;
+    width: 100%;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.35rem;
+    margin-right: 0 !important;
 }
 
 #v-pills-tabContent {
-    flex: 1;
+    width: 100%;
     min-width: 0;
 }
 
 #profile-tab-pane .d-flex {
-    gap: 0.65rem;
+    flex-direction: column;
+    gap: 0.55rem;
 }
 
 #v-pills-tab .nav-link {
@@ -109,7 +113,7 @@ body > .d-flex {
     color: var(--muted-foreground);
     border-radius: 10px;
     font-weight: 600;
-    text-align: left;
+    text-align: center;
     transition: 150ms ease;
 }
 
@@ -325,15 +329,99 @@ p {
     body > .d-flex {
         flex-direction: column;
         padding: 0.8rem;
+        gap: 0.9rem;
     }
 
     #form {
         width: 100%;
+        max-width: 100%;
+        padding: 0.85rem !important;
     }
 
     #img-container {
         width: 100%;
         justify-items: center;
         grid-template-columns: 1fr;
+    }
+
+    #print {
+        right: 0.8rem;
+        bottom: 0.8rem;
+    }
+}
+
+@media (max-width: 700px) {
+    body > .d-flex {
+        padding: 0.55rem;
+    }
+
+    .nav-tabs {
+        padding: 0.24rem;
+        gap: 0.25rem;
+    }
+
+    .nav-tabs .nav-link {
+        min-height: 2.1rem;
+        font-size: 0.84rem;
+    }
+
+    #profile-tab-pane .d-flex {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    #v-pills-tab {
+        flex: none;
+        width: 100%;
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.35rem;
+        margin-right: 0 !important;
+    }
+
+    #v-pills-tab .nav-link {
+        text-align: center;
+        font-size: 0.8rem;
+        padding: 0.45rem 0.35rem;
+    }
+
+    #v-pills-tabContent {
+        width: 100%;
+    }
+
+    .slider-field {
+        margin-bottom: 0.45rem;
+    }
+
+    .slider-field label {
+        font-size: 0.78rem;
+    }
+
+    #restore {
+        margin-top: 0.75rem;
+        margin-right: 0.35rem;
+    }
+
+    #print {
+        position: static;
+        margin-top: 0.6rem;
+    }
+
+    .individual,
+    img {
+        width: 312px;
+        height: 312px;
+    }
+}
+
+@media (max-width: 380px) {
+    .individual,
+    img {
+        width: 296px;
+        height: 296px;
+    }
+
+    #img-container {
+        justify-items: start;
     }
 }
