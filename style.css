@@ -44,7 +44,7 @@ body > .d-flex {
 }
 
 #form {
-    width: min(480px, 100%);
+    width: min(420px, 100%);
     margin: 0 !important;
     padding: 1.1rem !important;
     border: 1px solid var(--border);
@@ -92,6 +92,16 @@ body > .d-flex {
 
 #v-pills-tab {
     gap: 0.25rem;
+    flex: 0 0 138px;
+}
+
+#v-pills-tabContent {
+    flex: 1;
+    min-width: 0;
+}
+
+#profile-tab-pane .d-flex {
+    gap: 0.65rem;
 }
 
 #v-pills-tab .nav-link {
@@ -154,11 +164,21 @@ input[type="color"] {
 }
 
 .adjuster {
-    width: min(320px, 100%);
-    margin-top: 0.55rem;
-    margin-bottom: 0.15rem;
+    width: 100%;
+    margin-top: 0.12rem;
+    margin-bottom: 0.2rem;
     accent-color: #3f3f46;
     cursor: pointer;
+}
+
+.slider-field {
+    margin-bottom: 0.6rem;
+}
+
+.slider-field label {
+    margin-top: 0.2rem;
+    margin-bottom: 0.1rem;
+    display: block;
 }
 
 .btn {
