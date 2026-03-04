@@ -2,6 +2,8 @@
 // group to a React component + state slice.
 
 const STORAGE_KEY="cookieDesignerStateV1";
+const PROJECTS_STORAGE_KEY="cookieDesignerProjectsV1";
+const LAST_PROJECT_KEY="cookieDesignerLastProjectV1";
 const STORAGE_DEBOUNCE_MS=500;
 const DEFAULT_COLOR="#000000";
 let saveTimeoutId;
@@ -73,6 +75,18 @@ const clrChng=()=>{
 clr.oninput=clrChng;
 const clrtxt=document.getElementById("clrtxt");
 const clrbtn=document.getElementById("clrbtn");
+const projectNameInput=document.getElementById("projectName");
+const projectList=document.getElementById("projectList");
+const saveProjectBtn=document.getElementById("saveProjectBtn");
+const loadProjectBtn=document.getElementById("loadProjectBtn");
+const deleteProjectBtn=document.getElementById("deleteProjectBtn");
+const projectStatus=document.getElementById("projectStatus");
+const deleteProjectModalElement=document.getElementById("deleteProjectModal");
+const deleteProjectNameElement=document.getElementById("deleteProjectName");
+const confirmDeleteProjectBtn=document.getElementById("confirmDeleteProjectBtn");
+const overwriteProjectModalElement=document.getElementById("overwriteProjectModal");
+const overwriteProjectNameElement=document.getElementById("overwriteProjectName");
+const confirmOverwriteProjectBtn=document.getElementById("confirmOverwriteProjectBtn");
 const isValidHexColor=(value)=>/^#[0-9A-Fa-f]{6}$/.test(value);
 const normalizeHexColor=(value="")=>{
     const trimmedValue=value.trim();
@@ -226,6 +240,20 @@ const collectCurrentState=()=>{
     });
     return state;
 };
+const runAllAdjusterHandlers=()=>{
+    hns1.oninput();
+    hns2.oninput();
+    ens1.oninput();
+    ens2.oninput();
+    hnv1.oninput();
+    hnh1.oninput();
+    hnv2.oninput();
+    hnh2.oninput();
+    env1.oninput();
+    enh1.oninput();
+    env2.oninput();
+    enh2.oninput();
+};
 const saveStateNow=()=>{
     localStorage.setItem(STORAGE_KEY,JSON.stringify(collectCurrentState()));
 };
@@ -256,16 +284,9 @@ const bindPersistenceListeners=()=>{
         }
     });
 };
-const restoreState=()=>{
-    const rawState=localStorage.getItem(STORAGE_KEY);
-    if(!rawState){
-        return;
-    }
-    let parsedState;
-    try{
-        parsedState=JSON.parse(rawState);
-    }catch{
-        return;
+const applyState=(parsedState)=>{
+    if(!parsedState || typeof parsedState!=="object"){
+        return false;
     }
     isRestoringState=true;
     try{
@@ -289,24 +310,244 @@ const restoreState=()=>{
             inputElement.value=parsedState[inputElement.id];
         });
         syncPreviewFromInputs();
-        hns1.oninput();
-        hns2.oninput();
-        ens1.oninput();
-        ens2.oninput();
-        hnv1.oninput();
-        hnh1.oninput();
-        hnv2.oninput();
-        hnh2.oninput();
-        env1.oninput();
-        enh1.oninput();
-        env2.oninput();
-        enh2.oninput();
+        runAllAdjusterHandlers();
     }finally{
         isRestoringState=false;
     }
+    return true;
+};
+const restoreState=()=>{
+    const rawState=localStorage.getItem(STORAGE_KEY);
+    if(!rawState){
+        return;
+    }
+    let parsedState;
+    try{
+        parsedState=JSON.parse(rawState);
+    }catch{
+        return;
+    }
+    applyState(parsedState);
+};
+const setProjectStatus=(message,isError=false)=>{
+    if(!projectStatus){
+        return;
+    }
+    projectStatus.textContent=message;
+    projectStatus.style.color=isError ? "#b00020" : "#0a7a30";
+};
+const normalizeProjectName=(value="")=>value.trim();
+let pendingDeleteProjectName="";
+let deleteProjectModalInstance=null;
+let pendingOverwriteProjectName="";
+let overwriteProjectModalInstance=null;
+const getDeleteProjectModalInstance=()=>{
+    if(!deleteProjectModalElement || !window.bootstrap){
+        return null;
+    }
+    if(!deleteProjectModalInstance){
+        deleteProjectModalInstance=new window.bootstrap.Modal(deleteProjectModalElement);
+    }
+    return deleteProjectModalInstance;
+};
+const getOverwriteProjectModalInstance=()=>{
+    if(!overwriteProjectModalElement || !window.bootstrap){
+        return null;
+    }
+    if(!overwriteProjectModalInstance){
+        overwriteProjectModalInstance=new window.bootstrap.Modal(overwriteProjectModalElement);
+    }
+    return overwriteProjectModalInstance;
+};
+const readProjectsStore=()=>{
+    const rawStore=localStorage.getItem(PROJECTS_STORAGE_KEY);
+    if(!rawStore){
+        return {};
+    }
+    try{
+        const parsedStore=JSON.parse(rawStore);
+        if(parsedStore && typeof parsedStore==="object" && !Array.isArray(parsedStore)){
+            return parsedStore;
+        }
+    }catch{
+        return {};
+    }
+    return {};
+};
+const writeProjectsStore=(projectsStore)=>{
+    localStorage.setItem(PROJECTS_STORAGE_KEY,JSON.stringify(projectsStore));
+};
+const refreshProjectList=(selectedProjectName="")=>{
+    if(!projectList){
+        return;
+    }
+    const projectsStore=readProjectsStore();
+    const projectNames=Object.keys(projectsStore).sort((a,b)=>a.localeCompare(b));
+    const rememberedProjectName=normalizeProjectName(localStorage.getItem(LAST_PROJECT_KEY) || "");
+    const effectiveSelectedProjectName=selectedProjectName || rememberedProjectName;
+    projectList.innerHTML="";
+    const placeholderOption=document.createElement("option");
+    placeholderOption.value="";
+    placeholderOption.textContent=projectNames.length ? "Select project" : "No saved projects";
+    projectList.appendChild(placeholderOption);
+    projectNames.forEach((projectName)=>{
+        const option=document.createElement("option");
+        option.value=projectName;
+        option.textContent=projectName;
+        if(effectiveSelectedProjectName && effectiveSelectedProjectName===projectName){
+            option.selected=true;
+        }
+        projectList.appendChild(option);
+    });
+};
+const persistProject=(projectName,isOverwriting=false)=>{
+    const projectsStore=readProjectsStore();
+    projectsStore[projectName]=collectCurrentState();
+    writeProjectsStore(projectsStore);
+    localStorage.setItem(LAST_PROJECT_KEY,projectName);
+    saveStateNow();
+    refreshProjectList(projectName);
+    if(projectNameInput){
+        projectNameInput.value=projectName;
+    }
+    setProjectStatus(isOverwriting ? `Updated "${projectName}".` : `Saved "${projectName}".`);
+};
+const openOverwriteProjectModal=(projectName)=>{
+    const modalInstance=getOverwriteProjectModalInstance();
+    if(!modalInstance){
+        setProjectStatus("Overwrite dialog is unavailable.",true);
+        return;
+    }
+    pendingOverwriteProjectName=projectName;
+    if(overwriteProjectNameElement){
+        overwriteProjectNameElement.textContent=`"${projectName}"`;
+    }
+    modalInstance.show();
+};
+const confirmOverwriteProject=()=>{
+    const projectName=normalizeProjectName(pendingOverwriteProjectName);
+    if(!projectName){
+        setProjectStatus("Save cancelled.");
+        return;
+    }
+    persistProject(projectName,true);
+    const modalInstance=getOverwriteProjectModalInstance();
+    if(modalInstance){
+        modalInstance.hide();
+    }
+    pendingOverwriteProjectName="";
+};
+const saveProject=()=>{
+    const projectName=normalizeProjectName(projectNameInput?.value || "");
+    if(!projectName){
+        setProjectStatus("Enter a project name first.",true);
+        return;
+    }
+    const projectsStore=readProjectsStore();
+    const isOverwriting=projectsStore[projectName]!==undefined;
+    if(isOverwriting){
+        openOverwriteProjectModal(projectName);
+        return;
+    }
+    persistProject(projectName,false);
+};
+const loadProject=()=>{
+    const selectedProjectName=projectList?.value || "";
+    if(!selectedProjectName){
+        setProjectStatus("Choose a project to load.",true);
+        return;
+    }
+    const projectsStore=readProjectsStore();
+    const projectState=projectsStore[selectedProjectName];
+    const wasApplied=applyState(projectState);
+    if(!wasApplied){
+        setProjectStatus("Saved project data is invalid.",true);
+        return;
+    }
+    if(projectNameInput){
+        projectNameInput.value=selectedProjectName;
+    }
+    localStorage.setItem(LAST_PROJECT_KEY,selectedProjectName);
+    saveStateNow();
+    setProjectStatus(`Loaded "${selectedProjectName}".`);
+};
+const openDeleteProjectModal=()=>{
+    const selectedProjectName=projectList?.value || "";
+    if(!selectedProjectName){
+        setProjectStatus("Choose a project to delete.",true);
+        return;
+    }
+    const modalInstance=getDeleteProjectModalInstance();
+    if(!modalInstance){
+        setProjectStatus("Delete dialog is unavailable.",true);
+        return;
+    }
+    pendingDeleteProjectName=selectedProjectName;
+    if(deleteProjectNameElement){
+        deleteProjectNameElement.textContent=`"${selectedProjectName}"`;
+    }
+    modalInstance.show();
+};
+const deleteProject=()=>{
+    const selectedProjectName=pendingDeleteProjectName;
+    if(!selectedProjectName){
+        setProjectStatus("Choose a project to delete.",true);
+        return;
+    }
+    const projectsStore=readProjectsStore();
+    if(projectsStore[selectedProjectName]===undefined){
+        setProjectStatus("Project no longer exists.",true);
+        pendingDeleteProjectName="";
+        refreshProjectList();
+        return;
+    }
+    delete projectsStore[selectedProjectName];
+    writeProjectsStore(projectsStore);
+    const rememberedProjectName=normalizeProjectName(localStorage.getItem(LAST_PROJECT_KEY) || "");
+    if(rememberedProjectName===selectedProjectName){
+        localStorage.removeItem(LAST_PROJECT_KEY);
+    }
+    refreshProjectList();
+    if(projectNameInput && projectNameInput.value.trim()===selectedProjectName){
+        projectNameInput.value="";
+    }
+    const modalInstance=getDeleteProjectModalInstance();
+    if(modalInstance){
+        modalInstance.hide();
+    }
+    pendingDeleteProjectName="";
+    setProjectStatus(`Deleted "${selectedProjectName}".`);
+};
+const bindProjectCrud=()=>{
+    if(!projectList || !saveProjectBtn || !loadProjectBtn || !deleteProjectBtn || !confirmDeleteProjectBtn || !confirmOverwriteProjectBtn){
+        return;
+    }
+    saveProjectBtn.addEventListener("click",saveProject);
+    loadProjectBtn.addEventListener("click",loadProject);
+    deleteProjectBtn.addEventListener("click",openDeleteProjectModal);
+    confirmDeleteProjectBtn.addEventListener("click",deleteProject);
+    confirmOverwriteProjectBtn.addEventListener("click",confirmOverwriteProject);
+    if(deleteProjectModalElement){
+        deleteProjectModalElement.addEventListener("hidden.bs.modal",()=>{
+            pendingDeleteProjectName="";
+        });
+    }
+    if(overwriteProjectModalElement){
+        overwriteProjectModalElement.addEventListener("hidden.bs.modal",()=>{
+            pendingOverwriteProjectName="";
+        });
+    }
+    projectList.addEventListener("change",()=>{
+        const selectedProjectName=projectList.value;
+        if(selectedProjectName && projectNameInput){
+            projectNameInput.value=selectedProjectName;
+        }
+    });
+    refreshProjectList();
 };
 
 bindPersistenceListeners();
+bindProjectCrud();
 const restoreBtn=document.getElementById("restore");
 if(restoreBtn){
     restoreBtn.addEventListener("click",restoreState);
