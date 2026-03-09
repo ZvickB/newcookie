@@ -101,7 +101,9 @@ function App() {
           </div>
         }
       >
-        <CookiePreviewGrid cookies={cookies} />
+        <section id="print-root">
+          <CookiePreviewGrid cookies={cookies} />
+        </section>
       </DesignerLayout>
 
       <DeleteProjectDialog
