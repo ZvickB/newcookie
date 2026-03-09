@@ -1,2 +1,3 @@
 # newcookie
-create cookies design for bar mizvahs. I plan on adding other events.
+
+Cookie designer for bar mitzvah layouts, migrated to Vite + React with Tailwind-based styling and componentized UI.
