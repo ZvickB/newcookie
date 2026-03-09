@@ -10,7 +10,10 @@ export function CookieCard({ cookie }) {
           alt="Cookie design preview"
           className="h-full w-full object-cover"
         />
-        <div className="pointer-events-none absolute inset-0 rounded-full border-2 border-dotted border-black/60" />
+        <div
+          className="pointer-events-none absolute inset-0 rounded-full border border-dotted"
+          style={{ borderColor: "#cfcfcf" }}
+        />
         {cookie.layers.map((layer) => {
           const layerStyle = getLayerStyle(layer);
 
