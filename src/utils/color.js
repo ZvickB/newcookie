@@ -1,4 +1,4 @@
-export const DEFAULT_COLOR = "#151513";
+export const DEFAULT_COLOR = "#0000ff";
 
 export function isValidHexColor(value) {
   return /^#[0-9A-Fa-f]{6}$/.test(value);

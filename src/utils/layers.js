@@ -36,7 +36,7 @@ export const layerDefaults = [
     x: 0,
     y: 0,
     size: 60,
-    color: "#151513",
+    color: "#0000ff",
     language: "english",
     placeholder: "English name",
     baseClassName:
@@ -51,7 +51,7 @@ export const layerDefaults = [
     x: 0,
     y: 0,
     size: 60,
-    color: "#23e0e0",
+    color: "#0000ff",
     language: "english",
     placeholder: "Optional",
     baseClassName:

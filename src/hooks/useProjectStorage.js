@@ -1,22 +1,5 @@
-const PROJECTS_STORAGE_KEY = "cookieDesignerProjectsV2";
-
-function readProjectsStore() {
-  const rawStore = localStorage.getItem(PROJECTS_STORAGE_KEY);
-  if (!rawStore) {
-    return {};
-  }
-
-  try {
-    const parsed = JSON.parse(rawStore);
-    return parsed && typeof parsed === "object" ? parsed : {};
-  } catch {
-    return {};
-  }
-}
-
-function writeProjectsStore(store) {
-  localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(store));
-}
+import { useCallback, useEffect, useState } from "react";
+import { supabase } from "../lib/supabase";
 
 export function useProjectStorage({
   currentProjectName,
@@ -25,11 +8,48 @@ export function useProjectStorage({
   onLoadState,
   getCurrentState,
 }) {
-  const saveProject = (name, isOverwriting = false) => {
+  const [projectNames, setProjectNames] = useState([]);
+
+  const fetchProjectNames = useCallback(async () => {
+    const { data, error } = await supabase
+      .from("cookie_designs")
+      .select("name")
+      .order("name");
+
+    if (!error) {
+      setProjectNames(data.map((row) => row.name));
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchProjectNames();
+  }, [fetchProjectNames]);
+
+  const saveProject = async (name, isOverwriting = false) => {
     const projectName = name.trim();
-    const store = readProjectsStore();
-    store[projectName] = getCurrentState();
-    writeProjectsStore(store);
+
+    if (isOverwriting) {
+      const { error } = await supabase
+        .from("cookie_designs")
+        .update({ design_data: getCurrentState() })
+        .eq("name", projectName);
+
+      if (error) {
+        onProjectStatusChange(`Failed to update "${projectName}".`, true);
+        return;
+      }
+    } else {
+      const { error } = await supabase
+        .from("cookie_designs")
+        .insert({ name: projectName, design_data: getCurrentState() });
+
+      if (error) {
+        onProjectStatusChange(`Failed to save "${projectName}".`, true);
+        return;
+      }
+    }
+
+    await fetchProjectNames();
     onProjectNameChange(projectName);
     onProjectStatusChange(
       isOverwriting ? `Updated "${projectName}".` : `Saved "${projectName}".`,
@@ -37,45 +57,46 @@ export function useProjectStorage({
     );
   };
 
-  const loadProject = (name) => {
+  const loadProject = async (name) => {
     const projectName = name.trim();
     if (!projectName) {
       onProjectStatusChange("Choose a project to load.", true);
       return;
     }
 
-    const store = readProjectsStore();
-    const saved = store[projectName];
+    const { data, error } = await supabase
+      .from("cookie_designs")
+      .select("design_data")
+      .eq("name", projectName)
+      .single();
 
-    if (!saved) {
+    if (error || !data) {
       onProjectStatusChange("Saved project data is invalid.", true);
       return;
     }
 
-    onLoadState(saved);
+    onLoadState(data.design_data);
     onProjectNameChange(projectName);
     onProjectStatusChange(`Loaded "${projectName}".`, false);
   };
 
-  const deleteProject = (name) => {
+  const deleteProject = async (name) => {
     const projectName = name.trim();
-    const store = readProjectsStore();
 
-    if (!store[projectName]) {
-      onProjectStatusChange("Project no longer exists.", true);
+    const { error } = await supabase
+      .from("cookie_designs")
+      .delete()
+      .eq("name", projectName);
+
+    if (error) {
+      onProjectStatusChange(`Failed to delete "${projectName}".`, true);
       return;
     }
 
-    delete store[projectName];
-    writeProjectsStore(store);
+    await fetchProjectNames();
     onProjectNameChange(currentProjectName === projectName ? "" : currentProjectName);
     onProjectStatusChange(`Deleted "${projectName}".`, false);
   };
 
-  return {
-    projectNames: Object.keys(readProjectsStore()).sort(),
-    saveProject,
-    loadProject,
-    deleteProject,
-  };
+  return { projectNames, saveProject, loadProject, deleteProject };
 }
